@@ -6,7 +6,7 @@ from wifi.IWList import IWList
 
 CONFIG_FILE = "/etc/flashconfig-wifi.json"
 HOSTNAME_FILE = "/etc/hostname"
-INTERFACES_FILE = "/etc/network/interfaces"
+INTERFACES_FILE = "/etc/wpa_supplicant/wpa_supplicant.conf"
 INTERFACES_FILE_TEMPLATE = os.path.dirname(os.path.realpath(__file__)) + "/wpa_supplicant.conf"
 
 WPA_TEMPLATE = """
