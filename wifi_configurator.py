@@ -4,7 +4,7 @@ import json
 from flash_reader import FlashReader
 from wifi.IWList import IWList
 
-CONFIG_FILE = "/etc/winston-wifi.json"
+CONFIG_FILE = "/etc/flashconfig-wifi.json"
 INTERFACES_FILE = "/etc/network/interfaces"
 INTERFACES_FILE_TEMPLATE = os.path.dirname(os.path.realpath(__file__)) + "/wpa_supplicant.conf"
 
