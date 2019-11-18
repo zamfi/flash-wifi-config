@@ -26,7 +26,7 @@ class IWList():
         # Runs iwlist and gets WiFi data in a string
         # Developped, tested with Wireless Extension v29 English translation, Nov 2007
         # Tested and updated by zamfi@ for Wireless-Tools v30, Nov 2014
-        cstring = "iwlist " + interface + " scanning" + (" essid " + network if network is not None else "")
+        cstring = "iwlist " + interface + " scanning" + (" essid " + network.replace("'", "\\'") if network is not None else "")
         return os.popen(cstring).read()
 
     def parseRawData(self, rawdata):
