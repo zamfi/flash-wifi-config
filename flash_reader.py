@@ -20,9 +20,9 @@ class FlashReader:
 
     self.callback = callback
 
+    self.last_change = None
     self.last_value = None
-    self.last_change = 0
-
+    
     # Ported from C. Excuse the un-python-ness
     self.calculated_bit_length = None
     self.sync_start = None
@@ -41,11 +41,16 @@ class FlashReader:
     
     def noteChange(channel):
       self.noteChange(channel)
-    GPIO.add_event_detect(pin, GPIO.BOTH, callback=noteChange)
 
+    GPIO.remove_event_detect(pin)
+    GPIO.add_event_detect(pin, GPIO.BOTH, callback=noteChange)
 
   def noteChange(self, channel):
     now = datetime.datetime.now()
+    if self.last_change and (now-self.last_change).microseconds < 5000: # < 5ms since last change
+      return
+    # print("t", (now-self.last_change).microseconds if self.last_change is not None else "?")
+
     if self.last_value is None:
       self.last_value = GPIO.input(channel) == 0
       self.last_change = now
@@ -57,7 +62,7 @@ class FlashReader:
 
 
   def resetSync(self):
-    # print "STARTING OVER"
+    print "AWAITING SYNC"
     self.last_value = None
     self.sync_start = None
     self.zero_time = 0
@@ -69,12 +74,19 @@ class FlashReader:
     self.bits = []
 
   def updateSyncCounts(self, change_delay, value):
+    if change_delay > 4*self.MAX_BIT_DELAY:
+      return
     if value:
       self.zero_count += 1;
       self.zero_time += change_delay;
     else:
       self.one_count += 1;
       self.one_time += change_delay;
+    if self.zero_count > 0:
+      self.zero_length = self.zero_time/self.zero_count
+    if self.one_count > 0:
+      self.one_length = self.one_time/self.one_count
+    self.calculated_bit_length = (self.zero_length+self.one_length)/2
 
   def getByte(self, index):
     b = 0
@@ -121,25 +133,23 @@ class FlashReader:
           self.updateSyncCounts(change_delay, value)
           if self.one_count > 10:
             self.decoder_state = self.WATCHING_SYNC
+            # print("WATCHING SYNC -- Calculated bit length was", self.calculated_bit_length, "-- zero length of", self.zero_length, "("+str(self.zero_count)+")", "-- one length of", self.one_length, "("+str(self.one_count)+")")
         else:
           self.resetSync()
       return
 
     if self.decoder_state is self.WATCHING_SYNC:
-      if change_delay < 1.5 * self.MAX_BIT_DELAY:
+      if change_delay < 1.2 * (self.zero_length if value else self.one_length):
         self.updateSyncCounts(change_delay, value)
-      elif value and change_delay < 3 * self.MAX_BIT_DELAY:
+      elif value and change_delay < 4 * self.calculated_bit_length:
         # preamble has begun!
-        self.zero_length = self.zero_time/self.zero_count
-        self.one_length = self.one_time/self.one_count
-        self.calculated_bit_length = (self.zero_length+self.one_length)/2
         self.preamble_start = self.last_change + datetime.timedelta(microseconds=((self.zero_length / 2)+self.calculated_bit_length))
         self.decoder_state = self.READING_PREAMBLE
         self.bits.append(False)
         self.bits.append(False)
         # preamble starts with two 0s, which don't get read properly below
       else:
-        print "LOST SYNC delay", change_delay, "value", value
+        print "LOST SYNC delay", change_delay, " max ", self.MAX_BIT_DELAY, "value", value
         self.resetSync()
       return
 
@@ -181,7 +191,7 @@ if __name__ == '__main__':
     for index, byte in enumerate(bytes):
       print str(index)+":", bin(byte), hex(byte), "("+chr(byte)+")" if byte >=32 and byte <= 127 else ""
       
-  br = FlashReader(25, success)
+  br = FlashReader(26, success)
 
   while True:
     time.sleep(1)
