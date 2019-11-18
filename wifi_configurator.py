@@ -37,7 +37,7 @@ class CommandHandler:
 
         for cellId, cellData in data.items():
             if cellData["ESSID"] == network:
-                # print "found cell data", cellData
+                print "found cell data", cellData
                 if cellData["Encryption"] != "on":
                     return 'open'
                 else:
