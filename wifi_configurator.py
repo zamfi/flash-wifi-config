@@ -6,7 +6,18 @@ from wifi.IWList import IWList
 
 CONFIG_FILE = "/etc/winston-wifi.json"
 INTERFACES_FILE = "/etc/network/interfaces"
-INTERFACES_FILE_TEMPLATE = os.path.dirname(os.path.realpath(__file__)) + "/interfaces-template.txt"
+INTERFACES_FILE_TEMPLATE = os.path.dirname(os.path.realpath(__file__)) + "/wpa_supplicant.conf"
+
+WPA_TEMPLATE = """
+	ssid="%s"
+	psk="%s"
+	key_mgmt=WPA-PSK
+"""
+
+OPEN_TEMPLATE = """
+	ssid="%s"
+	key_mgmt=NONE
+"""
 
 class CommandHandler:
     def handle_input(self, input):
@@ -57,17 +68,14 @@ class CommandHandler:
 
         wifiType = self.inspect_wifi_type(network)
         if wifiType is 'wpa':
-            wifiDetails = "      wpa-ssid "+network+"\n      wpa-psk "+password+"\n"
-        elif wifiType is 'open' or wifiType is 'wep':
-            wifiDetails = "      wireless-essid "+network+"\n"
-            if wifiType is 'wep':
-                wifiDetails += "     wireless-key "+password+"\n"
+            wifiDetails = WPA_TEMPLATE % (network, password)
+        elif wifiType is 'open':
+            wifiDetails = OPEN_TEMPLATE % (network)
         
         if wifiDetails is not None:
             template = open(INTERFACES_FILE_TEMPLATE).read()
             f = open(INTERFACES_FILE, "w")
-            f.write(template)
-            f.write(wifiDetails)
+            f.write(template % (wifiDetails))
             f.close()
             self.reload_wifi()
 
@@ -97,7 +105,7 @@ class CommandHandler:
 
 if __name__ == "__main__":
     ch = CommandHandler()
-    ch.listen(25)
+    ch.listen(26)
 
     print "Listening..."
 
