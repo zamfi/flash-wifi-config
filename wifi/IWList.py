@@ -136,7 +136,7 @@ class IWList():
         return s.strip().split(" ")[0]
 
     def getCellChannel(self, s):
-        return s.strip().split(" ")[3][0:-1]
+        return s.strip().split(":")[1]
 
     def getCellEncryption(self, s):
         return s.strip().split(":")[1]
