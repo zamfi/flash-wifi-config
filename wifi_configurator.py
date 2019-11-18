@@ -121,7 +121,7 @@ class CommandHandler:
         hostname = bytearray(input[hostnameIndex:hostnameIndex+hostnameLen]).decode('utf-8').strip()
         keyLen = input[hostnameIndex+hostnameLen+1]
         keyIndex = hostnameIndex+hostnameLen+2
-        key = bytearray(input[keyIndex:keyInedx+keyLen]).decode('utf-8')
+        key = bytearray(input[keyIndex:keyIndex+keyLen]).decode('utf-8')
 
         self.update_wifi(network, password, hostname, key)
         
