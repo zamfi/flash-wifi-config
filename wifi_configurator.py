@@ -54,6 +54,8 @@ class CommandHandler:
         print "bringing down wlan0..."
         downtext = os.popen(cstring).read()
 
+        time.sleep(5)
+
         print "bringing up wlan0..."
         cstring = "ifup wlan0"
         uptext = os.popen(cstring).read()
