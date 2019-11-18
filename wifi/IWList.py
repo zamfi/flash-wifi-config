@@ -87,7 +87,7 @@ class IWList():
                cellData["Encryption"] = self.getCellEncryption(s)
             if s.strip().startswith("Bit Rates:"):
                cellData["Bit Rates"] = self.getCellBitRates(s)
-            if s.strip().startswith("IE:") and not s.strip().startsWith("IE: Unknown"):
+            if s.strip().startswith("IE:") and not s.strip().startswith("IE: Unknown"):
                cellData["IE"] = self.getEncryptionInformation(s, splitRawData)
             # TODO: parse encryption key details and Extra tags
             if s.strip().startswith("Extra:"):
