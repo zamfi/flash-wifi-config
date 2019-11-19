@@ -21,7 +21,28 @@ OPEN_TEMPLATE = """
 """
 
 class CommandHandler:
+    def led_on(self):
+        os.popen("echo 1 | sudo tee /sys/class/leds/led0/brightness").read()
+
+    def led_off(self):
+        os.popen("echo 0 | sudo tee /sys/class/leds/led0/brightness").read()
+
+    def led_reset(self):
+        os.popen("echo mmc0 | sudo tee /sys/class/leds/led0/trigger").read()
+        
+
+    def flash_led(self, n):
+        while n > 0:
+            self.led_on()
+            time.sleep(0.2)
+            self.led_off()
+            time.sleep(0.2)
+            n = n-1
+        self.led_reset()
+  
     def handle_input(self, input):
+        self.flash_led(10)
+      
         msgtype = input[0]
         if msgtype == 0:
             self.handle_wifi(input)
