@@ -64,6 +64,9 @@ class CommandHandler:
         
         cstring = "hostname --file /etc/hostname"
         hntext = os.popen(cstring).read()
+
+        cstring = "cat /etc/hostname | xargs avahi-set-host-name"
+        ashntext = os.popen(cstring).read()
         
         print "hostname set!"
 
