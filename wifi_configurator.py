@@ -22,13 +22,13 @@ OPEN_TEMPLATE = """
 
 class CommandHandler:
     def led_on(self):
-        os.popen("echo 1 | sudo tee /sys/class/leds/led0/brightness").read()
+        os.popen("echo 1 | tee /sys/class/leds/led0/brightness").read()
 
     def led_off(self):
-        os.popen("echo 0 | sudo tee /sys/class/leds/led0/brightness").read()
+        os.popen("echo 0 | tee /sys/class/leds/led0/brightness").read()
 
     def led_reset(self):
-        os.popen("echo mmc0 | sudo tee /sys/class/leds/led0/trigger").read()
+        os.popen("echo mmc0 | tee /sys/class/leds/led0/trigger").read()
         
 
     def flash_led(self, n):
