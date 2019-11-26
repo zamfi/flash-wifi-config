@@ -98,6 +98,10 @@ class CommandHandler:
         cstring = "wpa_cli -i wlan0 disconnect"
         os.popen(cstring).read()
 
+    def disconnect_wifi(self):
+        cstring = "wpa_cli -i wlan0 reconnect"
+        os.popen(cstring).read()
+
     def set_new_wifi(self, network, password, hostname):
         f = open(CONFIG_FILE, 'w')
         f.write(json.dumps({'network': network, 'password': password, 'hostname': hostname}))
@@ -122,6 +126,7 @@ class CommandHandler:
               f.write(hostname + "\n")
               f.close()
             self.reload_wifi()
+            self.reconnect_wifi();
             self.reload_hostname()
 
     def set_new_hostname(self, hostname):
