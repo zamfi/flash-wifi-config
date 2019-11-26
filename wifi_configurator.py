@@ -44,8 +44,10 @@ class CommandHandler:
         self.flash_led(10)
       
         msgtype = input[0]
-        if msgtype == 0:
+        if msgtype == 1:
             self.handle_wifi(input)
+        elif msgtype == 2:
+            self.handle_hostname(input)
         elif msgtype == 10:
             self.handle_command(input)
 
@@ -82,7 +84,8 @@ class CommandHandler:
         uptext = os.popen(cstring).read()
         
         print "network should be back up!"
-        
+    
+    def reload_hostname(self):
         cstring = "hostname --file /etc/hostname"
         hntext = os.popen(cstring).read()
 
@@ -91,6 +94,10 @@ class CommandHandler:
         
         print "hostname set!"
 
+    def disconnect_wifi(self):
+        cstring = "wpa_cli -i wlan0 disconnect"
+        os.popen(cstring).read()
+
     def set_new_wifi(self, network, password, hostname):
         f = open(CONFIG_FILE, 'w')
         f.write(json.dumps({'network': network, 'password': password, 'hostname': hostname}))
@@ -98,6 +105,7 @@ class CommandHandler:
 
         wifiDetails = None
 
+        self.disconnect_wifi()
         wifiType = self.inspect_wifi_type(network)
         if wifiType is 'wpa':
             wifiDetails = WPA_TEMPLATE % (network, password)
@@ -114,6 +122,15 @@ class CommandHandler:
               f.write(hostname + "\n")
               f.close()
             self.reload_wifi()
+            self.reload_hostname()
+
+    def set_new_hostname(self, hostname):
+        if len(hostname) > 0:
+          f = open(HOSTNAME_FILE, "w")
+          f.write(hostname + "\n")
+          f.close()
+          self.reload_hostname()
+                    
 
     def confirm_up(self, key):
         num_tries = 10
@@ -133,11 +150,16 @@ class CommandHandler:
         print "setting wifi with", network, password, hostname, key
         self.set_new_wifi(network, password, hostname)
         self.confirm_up(key)
-            
+    
+    def update_hostname(self, hostname, key):
+        print "setting hostname with", hostname, key
+        self.set_new_hostname(hostname)
+        self.confirm_up(key)
+    
     def handle_wifi(self, input):
         print "handling wifi on", input
-        networkLen = input[1]
-        networkIndex = 2
+        networkLen = input[2]
+        networkIndex = 3
         network = bytearray(input[networkIndex:networkIndex+networkLen]).decode('utf-8').strip()
         passwordLen = input[networkIndex+networkLen+1]
         passwordIndex = networkIndex+networkLen+2
@@ -150,10 +172,21 @@ class CommandHandler:
         key = bytearray(input[keyIndex:keyIndex+keyLen]).decode('utf-8')
 
         self.update_wifi(network, password, hostname, key)
+    
+    def handle_hostname(self, input):
+        print ("handling hostname on", input)
+        hostnameLen = input[2]
+        hostnameIndex = 3
+        hostname = bytearray(input[hostnameIndex:hostnameIndex+hostnameLen]).decode('utf-8').strip()
+        keyLen = input[hostnameIndex+hostnameLen+1]
+        keyIndex = hostnameIndex+hostnameLen+2
+        key = bytearray(input[keyIndex:keyIndex+keyLen]).decode('utf-8')
         
+        self.update_hostname(hostname, key)
+         
 
     def handle_command(self, input):
-        command = bytearray(input[2:2+input[1]]).decode('utf-8')
+        command = bytearray(input[3:3+input[2]]).decode('utf-8')
         if command == "shutdown":
             os.popen("shutdown -h now")
 
