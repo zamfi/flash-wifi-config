@@ -73,14 +73,14 @@ class CommandHandler:
         return None
 
     def reload_wifi(self):
-        cstring = "ifdown wlan0"
+        cstring = "ifconfig wlan0 down"
         print "bringing down wlan0..."
         downtext = os.popen(cstring).read()
 
         time.sleep(5)
 
         print "bringing up wlan0..."
-        cstring = "ifup wlan0"
+        cstring = "ifconfig wlan0 up"
         uptext = os.popen(cstring).read()
         
         print "network should be back up!"
