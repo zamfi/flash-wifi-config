@@ -72,19 +72,6 @@ class CommandHandler:
         print "network not found:", network
         return None
 
-    def reload_wifi(self):
-        cstring = "ifconfig wlan0 down"
-        print "bringing down wlan0..."
-        downtext = os.popen(cstring).read()
-
-        time.sleep(5)
-
-        print "bringing up wlan0..."
-        cstring = "ifconfig wlan0 up"
-        uptext = os.popen(cstring).read()
-        
-        print "network should be back up!"
-    
     def reload_hostname(self):
         cstring = "hostname --file /etc/hostname"
         hntext = os.popen(cstring).read()
@@ -94,11 +81,16 @@ class CommandHandler:
         
         print "hostname set!"
 
+    def reload_wifi(self):
+        cstring = "wpa_cli -i wlan0 reconfigure"
+        print "reloading wpa_supplicant..."
+        downtext = os.popen(cstring).read()
+
     def disconnect_wifi(self):
         cstring = "wpa_cli -i wlan0 disconnect"
         os.popen(cstring).read()
 
-    def disconnect_wifi(self):
+    def reconnect_wifi(self):
         cstring = "wpa_cli -i wlan0 reconnect"
         os.popen(cstring).read()
 
@@ -109,7 +101,6 @@ class CommandHandler:
 
         wifiDetails = None
 
-        self.disconnect_wifi()
         wifiType = self.inspect_wifi_type(network)
         if wifiType is 'wpa':
             wifiDetails = WPA_TEMPLATE % (network, password)
@@ -125,6 +116,7 @@ class CommandHandler:
               f = open(HOSTNAME_FILE, "w")
               f.write(hostname + "\n")
               f.close()
+            self.disconnect_wifi()
             self.reload_wifi()
             self.reconnect_wifi();
             self.reload_hostname()
